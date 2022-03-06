@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 )
 
 const data_path = "data/"
@@ -17,6 +18,26 @@ type Loader interface {
 
 // types
 type PlainLoader struct {
+	Users map[string]User
+}
+
+func (loader *PlainLoader) createUser(name string, data []byte) error {
+	to_convert := string(data)
+
+	user_data := strings.Split(to_convert, "\r\n")
+
+	if len(user_data) <= 1 {
+		return fmt.Errorf("could not convert %s", to_convert)
+	} else if len(user_data) >= 3 {
+		loader.Users[name] = User{
+			Name:     name,
+			Mail:     user_data[0],
+			Password: []byte(user_data[1]),
+			Salt:     []byte(user_data[2]),
+			Dates:    user_data[3:],
+		}
+	}
+	return nil
 }
 
 func (loader *PlainLoader) Load(name string) (User, error) {
@@ -60,7 +81,24 @@ func CreateUser(name string, mail string, dates string) User {
 }
 
 type User struct {
-	Name  string
-	Mail  string
-	Dates []string
+	Name     string
+	Mail     string
+	Password []byte
+	Salt     []byte
+	Dates    []string
+}
+
+type UserSession struct {
+	UserId          int32
+	SessionKey      []byte
+	LoginTime       time.Time
+	LastInteraction time.Time
+}
+
+type UserSessions struct {
+	activeUsers map[string]UserSession
+}
+
+func CreateSession() *UserSessions {
+	return &UserSessions{activeUsers: make(map[string]UserSession)}
 }

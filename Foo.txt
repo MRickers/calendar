@@ -1,3 +1,0 @@
-foo@mail.com
-31-12-2022-12-12-12Info: Call Bar
-12-12-2022-13-13-13Info: Diner
