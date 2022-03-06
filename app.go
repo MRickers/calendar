@@ -17,14 +17,18 @@ import (
 
 const edit_template_path = "tmpl/edit.html"
 const view_template_path = "tmpl/view.html"
+const front_template_path = "tmpl/frontpage.html"
 
 // global
-var templates = template.Must(template.ParseFiles(view_template_path, edit_template_path))
+var templates = template.Must(template.ParseFiles(view_template_path, edit_template_path, front_template_path))
+
+// regexp: ^ start of string, $ end of string. In [] it means not
 var validPath = regexp.MustCompile("^/(edit|save|view)/([a-zA-Z0-9]+)$")
 
 func main() {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 
+	http.HandleFunc("/", frontpageHandler)
 	http.HandleFunc("/view/", makeHandler(viewHandler))
 	http.HandleFunc("/edit/", makeHandler(editHandler))
 	http.HandleFunc("/save/", makeHandler(saveHandler))
@@ -50,6 +54,10 @@ func getTitle(urlPath string) (string, error) {
 		return "", fmt.Errorf("invalid path %s", urlPath)
 	}
 	return m[2], nil // The title is the second subexpression.
+}
+
+func frontpageHandler(w http.ResponseWriter, r *http.Request) {
+	renderTemplate("frontpage", w, &calendar.User{})
 }
 
 func viewHandler(w http.ResponseWriter, r *http.Request, title string) {
