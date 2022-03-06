@@ -6,6 +6,8 @@ import (
 	"strings"
 )
 
+const data_path = "data/"
+
 // interface
 
 type Loader interface {
@@ -29,7 +31,7 @@ func (loader *PlainLoader) Load(name string) (User, error) {
 
 		return User{Name: name, Mail: user_data[0], Dates: user_data[1:]}, nil
 	}
-	content, err := os.ReadFile(name + ".txt")
+	content, err := os.ReadFile(data_path + name + ".txt")
 
 	if err != nil {
 		return User{Name: name, Mail: ""}, err
@@ -38,7 +40,7 @@ func (loader *PlainLoader) Load(name string) (User, error) {
 }
 
 func (loader *PlainLoader) Save(user *User) error {
-	filename := user.Name + ".txt"
+	filename := data_path + user.Name + ".txt"
 	data := []byte(user.Mail + "\r\n")
 	data = append(data, []byte(strings.Join(user.Dates, "\r\n"))...)
 	return os.WriteFile(filename, data, 0600)
@@ -53,7 +55,7 @@ func LoaderFactory(loader string) Loader {
 }
 
 func CreateUser(name string, mail string, dates string) User {
-	dates_array := strings.Split(dates, ";")
+	dates_array := strings.Split(dates, "\r\n")
 	return User{Name: name, Mail: mail, Dates: dates_array}
 }
 
