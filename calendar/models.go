@@ -27,14 +27,12 @@ func (loader *PlainLoader) Load(name string) (User, error) {
 			return User{}, fmt.Errorf("could not convert %s", to_convert)
 		}
 
-		mails := strings.Split(user_data[1], ";")
-
-		return User{Name: name, Mail: user_data[0], Dates: mails}, nil
+		return User{Name: name, Mail: user_data[0], Dates: user_data[1:]}, nil
 	}
 	content, err := os.ReadFile(name + ".txt")
 
 	if err != nil {
-		return User{}, err
+		return User{Name: name, Mail: ""}, err
 	}
 	return convertToUser(content)
 }
@@ -42,7 +40,7 @@ func (loader *PlainLoader) Load(name string) (User, error) {
 func (loader *PlainLoader) Save(user *User) error {
 	filename := user.Name + ".txt"
 	data := []byte(user.Mail + "\r\n")
-	data = append(data, []byte(strings.Join(user.Dates, ";"))...)
+	data = append(data, []byte(strings.Join(user.Dates, "\r\n"))...)
 	return os.WriteFile(filename, data, 0600)
 }
 
